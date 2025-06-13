@@ -1,4 +1,3 @@
-// mediafire-extract-api.js
 const express = require("express");
 
 const axios = require("axios");
@@ -29,18 +28,23 @@ app.get('/api', async (req, res) => {
 
   try {
     // Retrieve MediaFire page HTML
-    const response = await axios.get(mediafireURL);
+    const response = await axios.get(mediafireURL, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0'
+      }
+    });
     const $ = cheerio.load(response.data);
 
     // Extract direct link
-    const directLink =$('#downloadButton').attr('href');
+    const directLink =$('#downloadButton').attr('href') ||
+      $('.download-button').attr('href'); // fallback if needed
 
     // Extract file name and size
     const fileName = $('.dl-info .filename').text().trim();
     const fileSize = $('.dl-info .file-size').text().trim();
 
     if (directLink) {
-      res.json({directLink, fileName, fileSize, mediafireURL, credit: "Developer: @labani"})
+      res.json({directLink, fileName, fileSize, mediafireURL, credit:'Developer: @labani'})
     } else {
       res.status(404).json({error:'Download link not found'})
     }
